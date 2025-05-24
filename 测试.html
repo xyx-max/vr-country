@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>全景场景跳转</title>
+    <!-- 加载 Pannellum 的 CSS 和 JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css" />
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+    <style>
+        body,
+        html {
+            margin: 0;
+            height: 100%;
+        }
+
+        #panorama {
+            width: 100%;
+            height: 100vh;
+        }
+
+        #positionInfo {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: white;
+            padding: 5px;
+            border: 1px solid black;
+        }
+
+        /* 红圈样式 */
+        #centerCircle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            border: 2px solid red;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="panorama"></div>
+    <div id="positionInfo"></div>
+    <!-- 添加红圈元素 -->
+    <div id="centerCircle"></div>
+
+    <script>
+        const viewer = pannellum.viewer('panorama', {
+            "default": {
+                "firstScene": "scene1",
+                "sceneFadeDuration": 1000
+            },
+            "scenes": {
+                "scene1": {
+                    "title": "场景一：房间A",
+                    "type": "equirectangular",
+                    "panorama": "5.jpg",
+                    "autoLoad": true,
+                    "hotSpots": [
+                        {
+                            "pitch": -30,
+                            "yaw": 140,
+                            "type": "scene",
+                            "text": "点我进入房间B",
+                            "sceneId": "scene2"
+                        }
+                    ]
+                },
+                "scene2": {
+                    "title": "场景二：房间B",
+                    "type": "equirectangular",
+                    "panorama": "6.jpg",
+                    "autoLoad": true,
+                    "hotSpots": [
+                        {
+                            "pitch": -40,
+                            "yaw": 100,
+                            "type": "scene",
+                            "text": "返回房间A",
+                            "sceneId": "scene1"
+                        }
+                    ]
+                }
+            }
+        });
+
+        let pressTimer;
+        const longPressDuration = 3000; // 3 秒长按时间阈值
+
+        // 监听鼠标按下事件
+        viewer.on('mousedown', function () {
+            pressTimer = setTimeout(() => {
+                // 使用 viewer.getPitch() 和 viewer.getYaw() 获取当前视角
+                const pitch = viewer.getPitch();
+                const yaw = viewer.getYaw();
+                const positionInfo = document.getElementById('positionInfo');
+
+                if (positionInfo) {
+                    positionInfo.textContent = `长按位置：pitch: ${pitch.toFixed(2)}, yaw: ${yaw.toFixed(2)}`;
+                }
+            }, longPressDuration);
+        });
+
+        // 监听鼠标释放事件
+        viewer.on('mouseup', function () {
+            clearTimeout(pressTimer);
+        });
+    </script>
+
+</body>
+
+</html>
